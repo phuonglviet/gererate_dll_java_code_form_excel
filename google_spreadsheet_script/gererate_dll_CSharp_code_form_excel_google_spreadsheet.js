@@ -96,7 +96,7 @@ function execute() {
     // mkStr = makeStrutsXmlInsertValues();
     // mkStr = makeStrutsXmlUpdateValues();
     mkStr = makeJavaVariableName();
-    mkStr += makeJavaProperty();
+    // mkStr += makeJavaProperty();
     // mkStr = makeJavaSetSampleDataForProperty();
 
 
@@ -116,26 +116,26 @@ function convType(data, size) {
     var scale = 0;
 
     if (data == CHAR || data == NCHAR || data == VARCHAR2 || data == NVARCHAR2) {
-        return 'String';
+        return 'string';
     }
     if (data == LONG || data == CLOB || data == NCLOB || data == ROWID) {
-        return 'String';
+        return 'string';
     }
     if (data == BINARY_DOUBLE) {
-        return 'Double';
+        return 'double';
     }
     if (data == BINARY_FLOAT) {
-        return 'BigDecimal';
+        return 'float';
     }
-
-    if (data == FLOAT) return 'Double';
-    if (data == TIMESTAMP) return 'Timestamp';
+    
+    if (data == FLOAT) return 'decimal';
+    if (data == TIMESTAMP) return 'DateTime';
     if (data == DATE) return 'DateTime';
 
     if (data == BFILE || data == RAW || data == BLOB) {
         return 'byte[]';
     }
-    
+
     if (data == NUMBER) {
         var arr = size.toString().trim().split(",");
         if (arr.length == 0) {
@@ -169,20 +169,20 @@ function convType(data, size) {
 */
 function getNumericType(precision, scale) {
     if (scale > 0) {
-        return "BigDecimal";
+        return "double";
     }
 
     if (precision <= 4) {
-        return "Short";
+        return "short";
     }
     else if (precision <= 9) {
-        return "Integer";
+        return "int";
     }
     else if (precision <= 18) {
-        return "Long";
+        return "long";
     }
     else {
-        return "BigDecimal";
+        return "double";
     }
 }
 
@@ -545,9 +545,9 @@ function makeJavaVariableName() {
             break;
         }
 
-        varName += '/**' + newLine;
-        varName += ' * ' + cLogicalNameOfColumn + newLine;
-        varName += ' **/' + newLine;
+        varName += '/// <summary>' + newLine;
+        varName += '/// ' + cLogicalNameOfColumn + newLine;
+        varName += '/// </summary>' + newLine;
         // varName += '@JsonProperty("' + cPhysicalNameOfColumn + '")' + newLine;
         // varName += '@Column(name = "' + cPhysicalNameOfColumn + '")' + newLine;
         varName += 'private ' + cConvTypeVal + ' ' + cJavaPropertyName + ';' + newLine;
@@ -575,17 +575,17 @@ function makeJavaProperty() {
             break;
         }
 
-        get = '/**' + newLine;
-        get += ' * ' + cLogicalNameOfColumn + 'を取得する\r\n';
-        get += ' * @return ' + cLogicalNameOfColumn + newLine;
-        get += ' **/' + newLine;
+        get = '/// <summary>' + newLine;
+        get += '/// ' + cLogicalNameOfColumn + 'を取得する\r\n';
+        get += '/// </summary>' + newLine;
+        get += '/// <remarks>' + cLogicalNameOfColumn + '</remarks>' + newLine;
         get += 'public ' + cConvTypeVal + ' get' + cJavaPropertyNameFirstCharUpperCase + '() {' + newLine;
         get += 'return this.' + cJavaPropertyName + ';' + newLine;
         get += '}' + newLine;
 
-        set = '/**' + newLine;
-        set += ' * ' + cLogicalNameOfColumn + 'を設定する\r\n';
-        set += ' **/' + newLine;
+        set = '/// <summary>' + newLine;
+        set += '/// ' + cLogicalNameOfColumn + 'を設定する\r\n';
+        set += '/// </summary>' + newLine;
         set += 'public void set' + cJavaPropertyNameFirstCharUpperCase + '(' + cConvTypeVal + ' ' + cJavaVarNameInPropertySet + ') {' + newLine;
         set += 'this.' + cJavaPropertyName + ' = ' + cJavaVarNameInPropertySet + ';' + newLine;
         set += '}' + newLine;
