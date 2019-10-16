@@ -27,9 +27,11 @@ var cReplaceColStr = 'crpmst_';
  * constant
 */
 var TIMESTAMP = 'TIMESTAMP';
+var DATE = 'DATE';
 var VARCHAR2 = 'VARCHAR2';
 var FLOAT = 'FLOAT';
 var NUMBER = 'NUMBER';
+var newLine = '\n';
 
 /** 
  * common var in sheet
@@ -81,12 +83,13 @@ function execute() {
     // mkStr = makeStrutsXmlInsertValues();
     // mkStr = makeStrutsXmlUpdateValues();
     mkStr = makeJavaVariableName();
-    mkStr += makeJavaProperty();
+    // mkStr += makeJavaProperty();
     // mkStr = makeJavaSetSampleDataForProperty();
 
 
     if(mkStr != '') {
         Browser.msgBox(mkStr);
+        Logger.log(mkStr);
     }
 }
 
@@ -101,6 +104,7 @@ function convType(data, size) {
 
     if (data == VARCHAR2) return 'String';
     if (data == TIMESTAMP) return 'Timestamp';
+    if (data == DATE) return 'DateTime';
     if (data == FLOAT) return 'Double';
 
     if (data == NUMBER) {
@@ -268,7 +272,7 @@ function setCommonVar(row) {
     cPhysicalNameOfColumnNotReplaceTblNameWithCamel = convCamel(cPhysicalNameOfColumn, '');
     // CrpmstBatFlg
     cPhysicalNameOfColumnNotReplaceTblNameWithCamelFirstCharUpperCase = cPhysicalNameOfColumnNotReplaceTblNameWithCamel.charAt(0).toUpperCase() + cPhysicalNameOfColumnNotReplaceTblNameWithCamel.substring(1, cPhysicalNameOfColumnNotReplaceTblNameWithCamel.length);
-    cTypeVal = gValuesOfRange[row][gIndexOfColumnType];
+    cTypeVal = gValuesOfRange[row][gIndexOfColumnType].toUpperCase();
     cSizeVal = gValuesOfRange[row][gIndexOfColumnSize];
     cDefaultVal = gValuesOfRange[row][gIndexOfColumnDefaultVal];
     if (typeof (cDefaultVal) !== "undefined") { cDefaultVal = cDefaultVal.toString().trim(); }
@@ -312,7 +316,7 @@ function setCommonVar(row) {
 /** create Alter Table script */
 function makeAlterTable() {
     
-    var ddl = 'ALTER TABLE ' + gTblNameUpper + ' ADD (' + '\r';
+    var ddl = 'ALTER TABLE ' + gTblNameUpper + ' ADD (' + newLine;
 
     for (var i = 1; i < gValuesOfRange.length; i++) {
 
@@ -343,7 +347,7 @@ function makeAlterTable() {
             ddl += ',';
         }
         
-        ddl += '\r';
+        ddl += newLine;
     }
 
     ddl += ');';
@@ -354,7 +358,7 @@ function makeAlterTable() {
 /** create Crate Table script */
 function makeCreateTable() {
 
-    var ddl = 'CREATE TABLE ' + gTblNameUpper + ' (' + '\r';
+    var ddl = 'CREATE TABLE ' + gTblNameUpper + ' (' + newLine;
 
     for (var i = 1; i < gValuesOfRange.length; i++) {
 
@@ -385,7 +389,7 @@ function makeCreateTable() {
             ddl += ',';
         }
         
-        ddl += '\r';
+        ddl += newLine;
     }
 
     ddl += ');';
@@ -396,7 +400,7 @@ function makeCreateTable() {
 /** create sql script data insert sample data */
 function makeSqlScriptInsertSampleData() {
 
-    var insertData = 'INSERT INTO ' + gTblNameUpper + ' VALUES ( \r';
+    var insertData = 'INSERT INTO ' + gTblNameUpper + ' VALUES ( \r\n';
 
     for (var i = 1; i < gValuesOfRange.length; i++) {
 
@@ -413,7 +417,7 @@ function makeSqlScriptInsertSampleData() {
         if (!cIsLastRow) {
             insertData += ',';
         }
-        insertData += '\r';
+        insertData += newLine;
     }
 
     insertData += ');';
@@ -438,7 +442,7 @@ function makeStrutsXmlResultMap() {
         }
         
         var columnName = cPhysicalNameOfColumnUpper;
-        xml += '<result column="' + columnName + '" property="' + cJavaPropertyName + '" jdbcType="' + cTypeVal + '" />' + '\r';
+        xml += '<result column="' + columnName + '" property="' + cJavaPropertyName + '" jdbcType="' + cTypeVal + '" />' + newLine;
     }
 
     return xml;
@@ -464,7 +468,7 @@ function makeStrutsXmlInsertValues() {
         if (!cIsLastRow) {
             xml += ',';
         }
-        xml += '\r';
+        xml += newLine;
     }
 
     return xml;
@@ -490,7 +494,7 @@ function makeStrutsXmlUpdateValues() {
         if (!cIsLastRow) {
             xml += ',';
         }
-        xml += '\r';
+        xml += newLine;
     }
 
     return xml;
@@ -512,13 +516,13 @@ function makeJavaVariableName() {
             break;
         }
 
-        varName += '/**' + '\r';
-        varName += ' * ' + cLogicalNameOfColumn + '\r';
-        varName += ' **/' + '\r';
-        // varName += '@JsonProperty("' + cPhysicalNameOfColumn + '")' + '\r';
-        // varName += '@Column(name = "' + cPhysicalNameOfColumn + '")' + '\r';
-        varName += 'private ' + cConvTypeVal + ' ' + cJavaPropertyName + ';' + '\r';
-        varName += '\r';
+        varName += '/**' + newLine;
+        varName += ' * ' + cLogicalNameOfColumn + newLine;
+        varName += ' **/' + newLine;
+        // varName += '@JsonProperty("' + cPhysicalNameOfColumn + '")' + newLine;
+        // varName += '@Column(name = "' + cPhysicalNameOfColumn + '")' + newLine;
+        varName += 'private ' + cConvTypeVal + ' ' + cJavaPropertyName + ';' + newLine;
+        varName += newLine;
     }
 
     return varName;
@@ -542,22 +546,22 @@ function makeJavaProperty() {
             break;
         }
 
-        get = '/**' + '\r';
-        get += ' * ' + cLogicalNameOfColumn + 'を取得する\r';
-        get += ' * @return ' + cLogicalNameOfColumn + '\r';
-        get += ' **/' + '\r';
-        get += 'public ' + cConvTypeVal + ' get' + cJavaPropertyNameFirstCharUpperCase + '() {' + '\r';
-        get += 'return this.' + cJavaPropertyName + ';' + '\r';
-        get += '}' + '\r';
+        get = '/**' + newLine;
+        get += ' * ' + cLogicalNameOfColumn + 'を取得する\r\n';
+        get += ' * @return ' + cLogicalNameOfColumn + newLine;
+        get += ' **/' + newLine;
+        get += 'public ' + cConvTypeVal + ' get' + cJavaPropertyNameFirstCharUpperCase + '() {' + newLine;
+        get += 'return this.' + cJavaPropertyName + ';' + newLine;
+        get += '}' + newLine;
 
-        set = '/**' + '\r';
-        set += ' * ' + cLogicalNameOfColumn + 'を設定する\r';
-        set += ' **/' + '\r';
-        set += 'public void set' + cJavaPropertyNameFirstCharUpperCase + '(' + cConvTypeVal + ' ' + cJavaVarNameInPropertySet + ') {' + '\r';
-        set += 'this.' + cJavaPropertyName + ' = ' + cJavaVarNameInPropertySet + ';' + '\r';
-        set += '}' + '\r';
+        set = '/**' + newLine;
+        set += ' * ' + cLogicalNameOfColumn + 'を設定する\r\n';
+        set += ' **/' + newLine;
+        set += 'public void set' + cJavaPropertyNameFirstCharUpperCase + '(' + cConvTypeVal + ' ' + cJavaVarNameInPropertySet + ') {' + newLine;
+        set += 'this.' + cJavaPropertyName + ' = ' + cJavaVarNameInPropertySet + ';' + newLine;
+        set += '}' + newLine;
 
-        property += get + '\r' + set + '\r';
+        property += get + newLine + set + newLine;
     }
 
     return property;
@@ -582,7 +586,7 @@ function makeJavaSetSampleDataForProperty() {
 
         setDtoDataWithJava += dtoJavaVarName + ".set" + cJavaPropertyNameFirstCharUpperCase + "(";
         setDtoDataWithJava += makeDataSampleWithJava(cTypeVal);
-        setDtoDataWithJava += ');\r';
+        setDtoDataWithJava += ');\r\n';
     }
 
     return setDtoDataWithJava;
