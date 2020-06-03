@@ -45,7 +45,7 @@ var RAW = 'RAW';
 var BFILE = 'BFILE';
 var ROWID = 'ROWID';
 
-var newLine = '\n';
+var newLine = '\\n';
 
 /** 
  * common var in sheet
@@ -80,6 +80,8 @@ var cConvTypeVal = '';
 var cDefaultVal = '';
 var cIsLastRow = false;
 var cRemark = '';
+var cNotNullVal = '';
+var isNotNull = false;
 
 var cJavaVarNameInPropertySet = ''; // batFlg or crpmstBatFlg
 var cJavaPropertyName = ''; // batFlg or BatFlg or crpmstBatFlg or CrpmstBatFlg
@@ -303,10 +305,12 @@ function setCommonVar(row) {
     cSizeVal = gValuesOfRange[row][gIndexOfColumnSize];
     cDefaultVal = gValuesOfRange[row][gIndexOfColumnDefaultVal];
     cRemark = gValuesOfRange[row][gIndexOfColumnRemark];
+    cNotNullVal = gValuesOfRange[row][gIndexOfColumnNotNull];
+    isNotNull = (cNotNullVal == 'not');
 
     if (typeof(cDefaultVal) !== "undefined") { cDefaultVal = cDefaultVal.toString().trim(); }
-    notNullVal = gValuesOfRange[row][gIndexOfColumnNotNull];
-    if (typeof(notNullVal) !== "undefined") { notNullVal = notNullVal.toString().trim(); }
+    cNotNullVal = gValuesOfRange[row][gIndexOfColumnNotNull];
+    if (typeof(cNotNullVal) !== "undefined") { cNotNullVal = cNotNullVal.toString().trim(); }
     cLogicalNameOfColumn = gValuesOfRange[row][gIndexOfLogicalNameOfColumn];
     cIsLastRow = (gValuesOfRange[row + 1][gIndexOfPhysicalNameOfColumn] == '');
 
@@ -364,7 +368,7 @@ function makeAlterTable() {
         if (cDefaultVal != '') {
             ddl += ' DEFAULT ' + cDefaultVal;
         }
-        if (notNullVal == '○') {
+        if (isNotNull) {
             ddl += ' NOT NULL';
         }
         if (!cIsLastRow) {
@@ -417,7 +421,7 @@ function makeCreateTable() {
         if (cDefaultVal != '') {
             ddl += ' DEFAULT ' + cDefaultVal;
         }
-        if (notNullVal == '○') {
+        if (isNotNull) {
             ddl += ' NOT NULL';
         }
 
@@ -467,7 +471,7 @@ function makeCreateTable() {
 /** create sql script data insert sample data */
 function makeSqlScriptInsertSampleData() {
 
-    var insertData = 'INSERT INTO ' + gTblNameUpper + ' VALUES ( \r\n';
+    var insertData = 'INSERT INTO ' + gTblNameUpper + ' VALUES (' + newLine;
 
     for (var i = 1; i < gValuesOfRange.length; i++) {
 
@@ -588,6 +592,10 @@ function makeJavaVariableName() {
         varName += '/// </summary>' + newLine;
         // varName += '@JsonProperty("' + cPhysicalNameOfColumn + '")' + newLine;
         // varName += '@Column(name = "' + cPhysicalNameOfColumn + '")' + newLine;
+        if (isNotNull) {
+            varName += '@NotNull(message = "' + cLogicalNameOfColumn + 'を入力してください。")' + newLine;
+            varName += '@NotBlank(message = "' + cLogicalNameOfColumn + 'を入力してください。")' + newLine;
+        }
         varName += 'private ' + cConvTypeVal + ' ' + cJavaPropertyName + ';' + newLine;
         varName += newLine;
     }
@@ -614,7 +622,7 @@ function makeJavaProperty() {
         }
 
         get = '/// <summary>' + newLine;
-        get += '/// ' + cLogicalNameOfColumn + 'を取得する\r\n';
+        get += '/// ' + cLogicalNameOfColumn + 'を取得する' + newLine;
         get += '/// </summary>' + newLine;
         get += '/// <remarks>' + cLogicalNameOfColumn + '</remarks>' + newLine;
         get += 'public ' + cConvTypeVal + ' get' + cJavaPropertyNameFirstCharUpperCase + '() {' + newLine;
@@ -622,7 +630,7 @@ function makeJavaProperty() {
         get += '}' + newLine;
 
         set = '/// <summary>' + newLine;
-        set += '/// ' + cLogicalNameOfColumn + 'を設定する\r\n';
+        set += '/// ' + cLogicalNameOfColumn + 'を設定する' + newLine;
         set += '/// </summary>' + newLine;
         set += 'public void set' + cJavaPropertyNameFirstCharUpperCase + '(' + cConvTypeVal + ' ' + cJavaVarNameInPropertySet + ') {' + newLine;
         set += 'this.' + cJavaPropertyName + ' = ' + cJavaVarNameInPropertySet + ';' + newLine;
@@ -653,7 +661,7 @@ function makeJavaSetSampleDataForProperty() {
 
         setDtoDataWithJava += dtoJavaVarName + ".set" + cJavaPropertyNameFirstCharUpperCase + "(";
         setDtoDataWithJava += makeDataSampleWithJava(cTypeVal);
-        setDtoDataWithJava += ');\r\n';
+        setDtoDataWithJava += ');' + newLine;
     }
 
     return setDtoDataWithJava;
@@ -665,7 +673,7 @@ function getSheetnames() {
     var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
     for (var i = 0; i < sheets.length; i++) {
         // out.push([sheets[i].getName()])
-        str += sheets[i].getName() + '\\n';
+        str += sheets[i].getName() + newLine;
     }
     Browser.msgBox(str);
     // return out
